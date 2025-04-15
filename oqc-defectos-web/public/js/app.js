@@ -85,23 +85,46 @@ createApp({
         console.error('Error al cargar defectos:', error);
       }
     },
-    async guardarDefecto() {
-      try {
-        // Validar campos
-        if (!this.validarCampos()) return;
+    // Reemplaza tu función de guardar con esto:
+async function guardarDatos() {
+    const modelo = document.getElementById('modelo').value;
+    const parte = document.getElementById('parte').value;
+    const defecto = document.getElementById('defecto').value;
+    const cantidad = document.getElementById('cantidad').value;
+    const inspector = document.getElementById('inspector').value;
 
-        // Preparar datos
-        const defectoData = {
-          fecha: this.nuevoDefecto.fecha,
-          linea: this.nuevoDefecto.linea,
-          codigo: this.nuevoDefecto.codigo.trim(),
-          defecto: this.nuevoDefecto.defecto === 'OTRO' 
-            ? this.nuevoDefecto.otroDefecto.trim() 
-            : this.nuevoDefecto.defecto,
-          ubicacion: this.nuevoDefecto.ubicacion.trim(),
-          area: this.nuevoDefecto.area,
-          modelo: this.nuevoDefecto.modelo || await this.buscarModelo(this.nuevoDefecto.codigo)
-        };
+    try {
+        const response = await fetch('http://localhost:3001/api/guardar-defecto', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                modelo,
+                parte,
+                defecto,
+                cantidad,
+                inspector
+            }),
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Defecto registrado correctamente');
+            // Limpiar formulario
+            document.getElementById('defectosForm').reset();
+        } else {
+            alert('Error al guardar: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al conectar con el servidor');
+    }
+}
+
+// Asignar la nueva función al botón
+document.getElementById('guardarBtn').addEventListener('click', guardarDatos);
 
         // Enviar al servidor
         const response = await axios.post('/api/defectos', defectoData);
